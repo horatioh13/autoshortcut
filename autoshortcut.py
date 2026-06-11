@@ -6,6 +6,23 @@ import sys
 # Flags
 make_desktop = "-d" in sys.argv
 remove_install = "-r" in sys.argv
+only_desktop = "-o" in sys.argv
+show_help = "-h" in sys.argv or "--help" in sys.argv
+
+if show_help:
+    print("Usage: python autoshortcut.py [options]")
+    print()
+    print("Install or remove a terminal command for the PyInstaller-built app in dist/.")
+    print()
+    print("Options:")
+    print("  No arguments    Normal install: create symlink in /usr/local/bin, and if")
+    print("                  -d is also passed, create a .desktop file too.")
+    print("  -d              Create a .desktop file in ~/.local/share/applications/")
+    print("  -o              Only create the .desktop file, skip symlink creation")
+    print("                  (only meaningful with -d)")
+    print("  -r              Remove/uninstall mode: remove the symlink and .desktop file")
+    print("  -h, --help      Show this help message and exit")
+    sys.exit(0)
 
 # 1️ Locate the latest build in dist/
 dist_path = os.path.join(os.getcwd(), "dist")
@@ -91,8 +108,10 @@ Categories=Utility;
         os.chmod(desktop_path, 0o755)
         print(f".desktop file created: {desktop_path}")
 
-# 3 Create symlink in /usr/local/bin (always)
-if os.path.exists(symlink_path):
+# 3 Create symlink in /usr/local/bin (always unless -o is given)
+if only_desktop:
+    print("Skipping symlink creation (-o flag).")
+elif os.path.exists(symlink_path):
     response = input(
         f"A file or command named '{exe_name}' already exists in /usr/local/bin. Overwrite? [y/N]: "
     ).strip().lower()
